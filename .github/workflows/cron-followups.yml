@@ -1,0 +1,34 @@
+# Stage 2 (Case Study) and Stage 3 (Breakup) follow-up sender.
+# Runs every 30 minutes — picks up any Stage 1 sends that are old enough
+# AND haven't received a reply yet, then fires the next-stage email.
+#
+# Schedule notes:
+#   - GitHub Actions can delay scheduled runs by up to 15 min during peak
+#     load. That's fine — the followup logic is idempotent (won't double-send).
+#   - In test mode (NEXT_PUBLIC_FOLLOWUP_TEST_MODE=true), thresholds drop
+#     from days to ~2 minutes, so a 30-min cron will pick up follow-ups
+#     in the next cycle after Stage 1 sent.
+#
+# Required GitHub repo secrets:
+#   APP_URL       e.g. https://job-scraper-dashboard.vercel.app
+#   CRON_SECRET   same value as Vercel env var CRON_SECRET
+
+name: cron-followups
+
+# Schedule disabled — followups now run as step 3 of cron-scrape (daily 7 AM IST).
+# Kept around as a manual-only trigger for ad-hoc reruns from the Actions UI.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hit /api/cron/followups
+        run: |
+          curl --fail --silent --show-error \
+            --max-time 240 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/followups"

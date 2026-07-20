@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+/* Sidebar brand logo — theme-aware. The Manatanu logo is a transparent PNG
+   shipped as two variants: the stock one (navy "Manatanu" / grey "IT Services"
+   wordmark) for light mode, and a recoloured one (white wordmark, orange
+   "Infotech" preserved) for dark mode. Both are transparent, so the brand
+   block sits directly on the sidebar surface — no white tile, and none of the
+   invert/hue-rotate filter trickery the old opaque JPEG needed. */
+.brand-logo-card { background: transparent; }
+[data-theme="dark"] .brand-logo-img-light { display: none; }
+.brand-logo-img-dark { display: none; }
+[data-theme="dark"] .brand-logo-img-dark { display: block; }
+
+
+/* =============================================================================
+   ScraperAI design tokens — light + dark themes.
+   Toggled via `data-theme="light|dark"` on <html> (set by the pre-hydration
+   script in layout.tsx and the topbar theme toggle). Components reference
+   tokens via var(--name), so flipping the attribute restyles everything.
+============================================================================= */
+
+/* Light theme (default first-visit) — soft white SaaS look. */
+:root,
+[data-theme="light"] {
+  --background: #fafbfc;          /* page bg — off-white, less harsh than pure #fff */
+  --surface: #ffffff;             /* cards / table rows */
+  --surface-2: #f3f5f8;           /* hover / nested surfaces */
+  --border: #e5e8ec;              /* hairline borders */
+  --border-strong: #cbd2da;       /* emphasised borders */
+  --foreground: #0f1216;          /* primary text — near-black */
+  --text: var(--foreground);      /* alias used by some components */
+  --muted: #5b626d;               /* secondary text */
+  --muted-2: #9aa0aa;             /* tertiary text */
+  --accent: #1E88E5;              /* brand blue */
+  --accent-hover: #1668B5;        /* light theme darkens on hover */
+  --accent-soft: rgba(30, 136, 229, 0.10);
+  --accent-soft-strong: rgba(30, 136, 229, 0.18);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.08);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.10);
+  --info: #2563eb;
+  --info-soft: rgba(37, 99, 235, 0.10);
+  /* Subtle elevation shadow used on cards / dropdowns. Light theme
+     needs softer shadows than dark (where they'd disappear). */
+  --shadow-card: 0 1px 2px rgba(15, 18, 22, 0.04),
+                 0 1px 3px rgba(15, 18, 22, 0.04);
+  --shadow-pop: 0 8px 24px rgba(15, 18, 22, 0.08),
+                0 2px 6px rgba(15, 18, 22, 0.04);
+}
+
+/* Dark theme — refined version of the original ScraperAI palette. */
+[data-theme="dark"] {
+  --background: #07090c;
+  --surface: #0f1216;
+  --surface-2: #161a20;
+  --border: #1f242c;
+  --border-strong: #2a3038;
+  --foreground: #e8eaed;
+  --text: var(--foreground);
+  --muted: #8e96a3;
+  --muted-2: #5b626d;
+  --accent: #1E88E5;              /* brand blue */
+  --accent-hover: #42A0EE;        /* dark theme lightens on hover */
+  --accent-soft: rgba(30, 136, 229, 0.15);
+  --accent-soft-strong: rgba(30, 136, 229, 0.25);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
+  --info: #3b82f6;
+  --info-soft: rgba(59, 130, 246, 0.15);
+  /* Dark theme uses borders for separation, not shadows. Keep these
+     near-zero so cards don't get a dark halo. */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.4),
+                0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
+  /* Smooth color transitions when the user flips themes. Limited to
+     bg + text so the rest of the UI doesn't ripple weirdly. */
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Headings get a touch tighter so they read as confident chunks rather
+   than spaced-out marketing copy. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
+}
+
+/* Tabular numerics for timestamps + counts so columns line up. */
+.font-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar — adapts to the theme via tokens. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-2);
+}
+
+/* Reusable surface chrome. Cards opt in via className and inherit the
+   theme-driven border + radius + soft shadow. */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+}
+.surface-hover {
+  transition: background 120ms ease, border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.surface-hover:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-pop);
+}
+
+/* Focus ring — keeps keyboard navigation visible without being garish. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Form controls already show a single thin accent BORDER on focus
+   (focus:border-[--accent]). The global outline above would sit on top of
+   that with a 2px offset, reading as a thick double ring — so drop the
+   outline here and let the single thin border be the focus indicator. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* Anything with the solid accent background keeps white text in both
+   themes — the global text-white -> text-foreground swap would otherwise
+   make light-theme accent buttons render near-black on green, which
+   breaks the brand contrast. */
+[class*="bg-[var(--accent)]"]:not([class*="bg-[var(--accent-soft"]) {
+  color: #ffffff;
+}
+
+/* Theme toggle button styles — used in topbar + detail-page sidebar. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  cursor: pointer;
+}
+.theme-toggle:hover {
+  background: var(--surface-2);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Drawer / modal entrance animations. Used by the Prompts page composer
+   (slides in from the left edge) and any future side panels. Keep
+   durations short — 180-220ms — so the UI feels responsive, not slow. */
+@keyframes pc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pc-slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes pc-slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-fadeIn {
+  animation: pc-fade-in 180ms ease-out;
+}
+.animate-slideInLeft {
+  animation: pc-slide-in-left 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animate-slideInRight {
+  animation: pc-slide-in-right 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* react-day-picker — Analytics page calendar.
+   Goal: a clean, native-browser-style grid. Each day sits in its own
+   square cell with breathing room, two-letter weekday headers on top,
+   selected day gets a solid filled rounded square, range middle gets a
+   soft accent-tinted strip without hiding the day numbers. */
+.rdp-root {
+  --rdp-day-width: 38px;
+  --rdp-day-height: 38px;
+  --rdp-cell-size: 38px;
+  --rdp-accent-color: var(--accent);
+  --rdp-background-color: var(--surface-2);
+  --rdp-accent-background-color: var(--accent-soft);
+  --rdp-range_middle-color: var(--accent-soft);
+  --rdp-today-color: var(--accent);
+  padding: 4px;
+}
+/* Caption row — month/year label + nav arrows, evenly spaced. */
+.rdp-root .rdp-month_caption {
+  padding: 0 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rdp-root .rdp-caption_label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.rdp-root .rdp-nav {
+  display: flex;
+  gap: 4px;
+}
+.rdp-root .rdp-button_previous,
+.rdp-root .rdp-button_next {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.rdp-root .rdp-button_previous:hover,
+.rdp-root .rdp-button_next:hover {
+  background: var(--surface-2);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+/* Weekday header row — Su Mo Tu …, centred per column. */
+.rdp-root .rdp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, var(--rdp-day-width));
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.rdp-root .rdp-weekday {
+  width: var(--rdp-day-width);
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-2);
+  padding: 4px 0;
+}
+/* The grid that holds each week's days — 7 equal columns. */
+.rdp-root .rdp-week {
+  display: grid;
+  grid-template-columns: repeat(7, var(--rdp-day-width));
+  gap: 2px;
+}
+.rdp-root .rdp-day {
+  width: var(--rdp-day-width);
+  height: var(--rdp-day-height);
+  font-size: 13px;
+  color: var(--foreground);
+  position: relative;
+}
+.rdp-root .rdp-day_button {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  transition: background 120ms ease, color 120ms ease;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.rdp-root .rdp-day_button:hover {
+  background: var(--surface-2);
+}
+.rdp-root .rdp-today .rdp-day_button {
+  font-weight: 600;
+  color: var(--accent);
+}
+.rdp-root .rdp-outside .rdp-day_button {
+  color: var(--muted-2);
+  opacity: 0.55;
+}
+.rdp-root .rdp-disabled .rdp-day_button {
+  color: var(--muted-2);
+  opacity: 0.4;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.rdp-root .rdp-disabled .rdp-day_button:hover {
+  background: transparent;
+}
+.rdp-root .rdp-selected .rdp-day_button {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+.rdp-root .rdp-range_start .rdp-day_button,
+.rdp-root .rdp-range_end .rdp-day_button {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+/* Range middle days get a soft tinted background that spans the row
+   visually without obscuring the date number. */
+.rdp-root .rdp-range_middle {
+  background: var(--accent-soft);
+}
+.rdp-root .rdp-range_middle .rdp-day_button {
+  background: transparent;
+  color: var(--foreground);
+}
+.rdp-root .rdp-range_start {
+  background: linear-gradient(to right, transparent 50%, var(--accent-soft) 50%);
+}
+.rdp-root .rdp-range_end {
+  background: linear-gradient(to right, var(--accent-soft) 50%, transparent 50%);
+}
+.rdp-root .rdp-range_start.rdp-range_end {
+  background: transparent; /* single-day range — no flanking band */
+}

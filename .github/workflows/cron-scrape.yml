@@ -1,0 +1,184 @@
+# Daily orchestrator — multi-time entry point.
+#
+# GitHub Actions cron is always UTC. We fire at every supported IST slot
+# (the 9 options the dashboard's Daily Schedule multi-select offers); the
+# gate job below reads settings.daily_schedule_times and skips firings the
+# user didn't pick. Save the dropdown in the dashboard and the next firing
+# automatically respects the new schedule — no manual deploy needed.
+#
+# Note: GH Actions can delay scheduled runs by up to 15 min during peak load.
+#
+# Why so many small steps:
+#   Vercel Hobby caps each Serverless Function at 300s. The full daily
+#   pipeline (parse-gmail + 5 Apify scrapes + 25-job enrich loop) exceeds
+#   that ceiling in one call. Split into smaller chunks here:
+#
+#     1. reply-check         → DISABLED (reply check not currently in use)
+#     2. parse-gmail         → Source A ingestion only
+#     3. scrape-jobs × roles → Source B, ONE role per call
+#     4. drain queue × N     → /api/cron/scrape?skipIngest=true&max=5
+#                              hit repeatedly until jobsProcessed drops
+#     5. followups           → DISABLED (Stage 2/3 auto-send is off)
+#
+# Each curl gets HTTP status + response body printed for debuggability.
+#
+# Required GitHub repo secrets:
+#   CRON_SECRET   same value as Vercel env var CRON_SECRET
+#
+# Manual run: GitHub UI → Actions tab → this workflow → "Run workflow"
+
+name: cron-scrape
+
+on:
+  schedule:
+    # Every IST slot the dashboard's Daily Schedule multi-select exposes.
+    # The gate filters down to whichever ones the user has actually picked.
+    - cron: "0 4 * * *"     # 04:00 UTC = 09:30 IST
+    - cron: "30 4 * * *"    # 04:30 UTC = 10:00 IST
+    - cron: "0 5 * * *"     # 05:00 UTC = 10:30 IST
+    - cron: "0 7 * * *"     # 07:00 UTC = 12:30 IST
+    - cron: "0 8 * * *"     # 08:00 UTC = 13:30 IST
+    - cron: "0 9 * * *"     # 09:00 UTC = 14:30 IST
+    - cron: "30 10 * * *"   # 10:30 UTC = 16:00 IST
+    - cron: "0 11 * * *"    # 11:00 UTC = 16:30 IST
+    - cron: "30 11 * * *"   # 11:30 UTC = 17:00 IST
+    - cron: "30 12 * * *"   # 12:30 UTC = 18:00 IST
+    - cron: "45 12 * * *"   # 12:45 UTC = 18:15 IST
+    - cron: "0 13 * * *"    # 13:00 UTC = 18:30 IST
+    - cron: "15 13 * * *"   # 13:15 UTC = 18:45 IST
+    - cron: "30 13 * * *"   # 13:30 UTC = 19:00 IST
+  workflow_dispatch: {}
+
+jobs:
+  # Cheap pre-flight that reads settings.daily_schedule_times and decides
+  # whether the heavy `daily` job should execute. Manual dispatches always
+  # run; scheduled fires only run when the current IST HH:MM is in the
+  # user-selected array.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    env:
+      APP: "https://jobs-scraper-production.vercel.app"
+      AUTH: "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger -> always run."
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Use the EXACT cron schedule that triggered this run (instead of
+          # current wall-clock time + tolerance). This is delay-proof — even
+          # if GitHub Actions starts the job 20 min late, github.event.schedule
+          # still tells us which IST slot fired, so the match is unambiguous.
+          # Critical with 15-min-apart slots (e.g. 18:00 vs 18:15) where a
+          # tolerance window would overlap and double-fire neighbouring slots.
+          CRON_SCHEDULE='${{ github.event.schedule }}'
+          # cron expression layout: "M H * * *". Parse the first two fields.
+          CRON_MIN=$(echo "$CRON_SCHEDULE" | awk '{print $1}')
+          CRON_HOUR=$(echo "$CRON_SCHEDULE" | awk '{print $2}')
+          # UTC → IST: add 5h30m (330 min). Day-rollover handled with %1440.
+          UTC_TOTAL=$(( 10#$CRON_HOUR * 60 + 10#$CRON_MIN ))
+          IST_TOTAL=$(( (UTC_TOTAL + 330) % 1440 ))
+          IST_HOUR=$(( IST_TOTAL / 60 ))
+          IST_MIN=$(( IST_TOTAL % 60 ))
+          IST_TIME=$(printf "%02d:%02d" $IST_HOUR $IST_MIN)
+          # Bearer-gated read — /api/settings sits behind the Supabase session
+          # wall (no whitelist), so an unauthenticated curl 307s to /login
+          # and we'd be jq-parsing HTML (which is what kept failing runs
+          # #30-#35 with "Invalid numeric literal"). /api/cron/settings
+          # lives under the /api/cron/* middleware whitelist and validates
+          # CRON_SECRET, so this actually returns JSON.
+          SETTINGS=$(curl --silent --max-time 30 -H "$AUTH" "$APP/api/cron/settings" || echo '{}')
+          echo "Raw settings response: $SETTINGS"
+          TIMES=$(echo "$SETTINGS" | jq -c '.data.daily_schedule_times // []' 2>/dev/null || echo '[]')
+          echo "This cron fire represents IST $IST_TIME (from UTC $CRON_HOUR:$CRON_MIN)"
+          echo "User schedule from DB: $TIMES"
+          if [ "$TIMES" = "[]" ] || [ "$TIMES" = "null" ]; then
+            echo "Scheduler disabled (daily_schedule_times empty) -> skip."
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if echo "$TIMES" | jq -e --arg t "$IST_TIME" 'index($t)' > /dev/null; then
+            echo "IST $IST_TIME is selected -> run."
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "IST $IST_TIME not in user schedule -> skip."
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+  daily:
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      APP: "https://jobs-scraper-production.vercel.app"
+      AUTH: "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+    steps:
+      # 1. Reply check — DISABLED. Reply detection is not active right now;
+      # uncomment if/when /api/cron/reply-check is needed again.
+      # - name: 1. Reply check
+      #   run: |
+      #     echo "→ POST $APP/api/cron/reply-check"
+      #     HTTP=$(curl --silent --show-error --max-time 290 \
+      #       -o /tmp/body.txt -w "%{http_code}" \
+      #       -H "$AUTH" "$APP/api/cron/reply-check") || true
+      #     echo "HTTP $HTTP"; echo "Body:"; cat /tmp/body.txt || true; echo
+
+      - name: 2. Parse Gmail alerts (Source A)
+        run: |
+          echo "→ POST $APP/api/parse-gmail"
+          HTTP=$(curl --silent --show-error --max-time 290 \
+            -o /tmp/body.txt -w "%{http_code}" \
+            -X POST "$APP/api/parse-gmail" \
+            -H "Content-Type: application/json" \
+            -d '{"maxEmails":25}') || true
+          echo "HTTP $HTTP"; echo "Body:"; cat /tmp/body.txt || true; echo
+
+      - name: 3. Scrape LinkedIn — one role per call (Source B)
+        run: |
+          for ROLE in "AI Engineer" "ML Engineer" "Data Analyst" "Backend Developer" "Full Stack Developer"; do
+            echo "=== Role: $ROLE ==="
+            HTTP=$(curl --silent --show-error --max-time 290 \
+              -o /tmp/body.txt -w "%{http_code}" \
+              -X POST "$APP/api/scrape-jobs" \
+              -H "Content-Type: application/json" \
+              -d "{\"platform\":\"linkedin\",\"roles\":[\"$ROLE\"],\"filters\":[\"Remote\"]}") || true
+            echo "HTTP $HTTP"
+            head -c 400 /tmp/body.txt 2>/dev/null; echo
+          done
+
+      # MANUAL-TESTING PHASE — Stage 1 auto-send is OFF.
+      # The drain loop passes ?skipSend=true so the cron only enriches the
+      # candidate jobs (status moves null → enriched) and stops there. The
+      # user ships Stage 1 / 2 / 3 themselves via the Smart Send button.
+      - name: 4. Drain pending jobs — enrich only (no auto-send)
+        run: |
+          for i in 1 2 3 4 5; do
+            echo "=== Batch $i ==="
+            HTTP=$(curl --silent --show-error --max-time 290 \
+              -o /tmp/body.txt -w "%{http_code}" \
+              -H "$AUTH" "$APP/api/cron/scrape?skipIngest=true&skipSend=true&max=5&force=true") || true
+            echo "HTTP $HTTP"; echo "Body:"; cat /tmp/body.txt; echo
+            # Quick exit if nothing was processed (queue drained).
+            if grep -q '"jobsProcessed":0' /tmp/body.txt 2>/dev/null; then
+              echo "Queue drained — stopping early."
+              break
+            fi
+            sleep 3
+          done
+
+      # 5. Followups (Stage 2 / Stage 3) — DISABLED. Stage 2/3 auto-send is
+      # off in the manual-testing phase. Uncomment to flip auto-followups
+      # back on; the route still works for ad-hoc reruns from the UI.
+      # - name: 5. Followups (Stage 2 / Stage 3)
+      #   run: |
+      #     echo "→ POST $APP/api/cron/followups"
+      #     HTTP=$(curl --silent --show-error --max-time 290 \
+      #       -o /tmp/body.txt -w "%{http_code}" \
+      #       -H "$AUTH" "$APP/api/cron/followups") || true
+      #     echo "HTTP $HTTP"; echo "Body:"; cat /tmp/body.txt || true; echo

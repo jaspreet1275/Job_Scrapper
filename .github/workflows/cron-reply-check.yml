@@ -1,0 +1,30 @@
+# Reply detector. Polls Gmail threads we've sent into and records any new
+# replies in email_replies. The followups workflow then suppresses Stage 2/3
+# sends for any thread with a recorded reply.
+#
+# Staggered 15 min off the followups cron so the two don't compete for
+# the same Gmail API quota in the same minute.
+#
+# Required GitHub repo secrets:
+#   APP_URL       e.g. https://job-scraper-dashboard.vercel.app
+#   CRON_SECRET   same value as Vercel env var CRON_SECRET
+
+name: cron-reply-check
+
+# Schedule disabled — reply-check now runs as step 1 of cron-scrape (daily 7 AM IST).
+# Kept around as a manual-only trigger for ad-hoc reruns from the Actions UI.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hit /api/cron/reply-check
+        run: |
+          curl --fail --silent --show-error \
+            --max-time 240 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/reply-check"
