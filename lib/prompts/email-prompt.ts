@@ -154,22 +154,26 @@ The HTML document MUST follow this layout exactly (no white card wrapper, no sha
        remote images until the reader clicks "display images", so the signature
        has to read completely without the logo ever loading. The <img> is a
        bonus for clients that do load it, never the only carrier of the brand. -->
- <div style="margin-top: 18px; border-top: 1px solid #E0E0E0; padding-top: 12px;">
-    <img
-      src="${LOGO_SRC}"
-      alt="${c.name}"
-      width="150"
-      style="display:block; width:150px; max-width:150px; height:auto; border:0; outline:none; text-decoration:none; margin:0 0 10px 0;"
-    />
+<div style="margin-top:18px; border-top:1px solid #E0E0E0; padding-top:12px;">
 
-<p style="margin:0; font-size:13px;">
-      <a href="${c.websiteUrl}"
-        target="_blank"
-        style="color:#0A3068; text-decoration:none; font-weight:600;">
-        ${c.website}
-      </a>
+    <div style="display:inline-block; padding:8px 12px; background:#F8F8F8; border:1px solid #E5E5E5; border-radius:6px;">
+        <img
+            src="${LOGO_SRC}"
+            alt="${c.name}"
+            width="150"
+            style="display:block; width:150px; max-width:150px; height:auto; border:0; outline:none; text-decoration:none;"
+        />
+    </div>
+
+    <p style="margin:8px 0 0; font-size:13px;">
+        <a href="${c.websiteUrl}"
+           target="_blank"
+           style="color:#0A3068; text-decoration:none; font-weight:600;">
+            ${c.website}
+        </a>
     </p>
-  </div>
+
+</div>
 
 </body>
 </html>
