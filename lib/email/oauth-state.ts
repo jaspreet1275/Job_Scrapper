@@ -14,16 +14,19 @@ import crypto from "crypto";
 // access to the server's env. A 10-minute TTL prevents replay-after-leak.
 
 function getSecret(): string {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    // CRON_SECRET is already required by the rest of the cron pipeline; if
-    // it's missing we want to fail loudly here rather than silently emit
-    // unsigned state values that the callback will reject anyway.
-    throw new Error(
-      "CRON_SECRET not set — required for OAuth state signing"
-    );
+  const secret = process.env.CRON_SECRET?.trim();
+  if (secret) {
+    return secret;
   }
-  return secret;
+
+  // Local development should still be able to start the Gmail OAuth flow
+  // without a cron secret configured. Production keeps the strict failure so
+  // the app does not silently fall back to an unsigned state.
+  if (process.env.NODE_ENV !== "production") {
+    return "dev-oauth-state-secret";
+  }
+
+  throw new Error("CRON_SECRET not set — required for OAuth state signing");
 }
 
 export function signState(label: string): string {

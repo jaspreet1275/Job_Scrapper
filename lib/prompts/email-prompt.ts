@@ -35,12 +35,12 @@ export interface PromptLead {
 // ─────────────────────────────────────────────────────────────────────────
 export const MANATANU_COMPANY = {
   name: "Manatanu Infotech",
-  email: "info@manatanuinfotech.com",
+  email: "",
   website: "www.manatanuinfotech.com",
   websiteUrl: "https://manatanuinfotech.com",
   /** Signature me jo naam aayega. */
-  senderName: "Sanjeev Kaushik",
-  senderTitle: "Sales Manager at Manatanu Infotech",
+  senderName: "Manatanu Infotech Team",
+  senderTitle: "",
   /**
    * Logo ab URL se nahi aata — public/manatanu-logo.jpg email ke andar hi
    * inline (CID) attachment ban ke jaata hai, dekho lib/email/logo.ts.
@@ -146,24 +146,28 @@ The HTML document MUST follow this layout exactly (no white card wrapper, no sha
 
   <p><strong>What makes us different:</strong> {{1-2 sentences on documentation, collaboration, ownership transfer to the in-house team}}</p>
   <p>{{CTA — quick <strong>15-minute call</strong> ask, "this week or next?"}}</p>
-  <p style="margin-top: 22px; margin-bottom: 4px;">Warm regards,</p>
+  <p style="margin-top: 22px; margin-bottom: 4px;">Best Regards,</p>
   <p style="margin-top: 0;"><strong>${c.senderName}</strong></p>
-  <p style="margin-top: 0;"><strong>${c.senderTitle}</strong></p>
 
   <!-- Signature block — logo + text. Reproduce verbatim.
        The text rows below the logo are NOT decoration: Gmail and Outlook block
        remote images until the reader clicks "display images", so the signature
        has to read completely without the logo ever loading. The <img> is a
        bonus for clients that do load it, never the only carrier of the brand. -->
-  <div style="margin-top: 18px; border-top: 2px solid #E8600A; padding-top: 12px;">
-    <img src="${LOGO_SRC}" alt="${c.name}" width="150" style="display:block; width:150px; max-width:150px; height:auto; border:0; outline:none; text-decoration:none; margin:0 0 10px 0;" />
-    <p style="margin: 0 0 2px 0; font-size: 16px; font-weight: bold; color: #0A3068;">${c.name}</p>
-    <p style="margin: 0 0 8px 0; font-size: 12px; color: #E8600A; letter-spacing: 0.5px;">IT Services</p>
-    <p style="margin: 0 0 2px 0; font-size: 13px; color: #555555;">
-      <a href="mailto:${c.email}" style="color: #E8600A; text-decoration: none;">${c.email}</a>
-    </p>
-    <p style="margin: 0; font-size: 13px; color: #555555;">
-      <a href="${c.websiteUrl}" target="_blank" style="color: #E8600A; text-decoration: none;">${c.website}</a>
+ <div style="margin-top: 18px; border-top: 1px solid #E0E0E0; padding-top: 12px;">
+    <img
+      src="${LOGO_SRC}"
+      alt="${c.name}"
+      width="150"
+      style="display:block; width:150px; max-width:150px; height:auto; border:0; outline:none; text-decoration:none; margin:0 0 10px 0;"
+    />
+
+<p style="margin:0; font-size:13px;">
+      <a href="${c.websiteUrl}"
+        target="_blank"
+        style="color:#0A3068; text-decoration:none; font-weight:600;">
+        ${c.website}
+      </a>
     </p>
   </div>
 
@@ -176,7 +180,7 @@ The HTML document MUST follow this layout exactly (no white card wrapper, no sha
 - Inline CSS only — no <style> tags, no external CSS.
 - The body must NOT contain a "SUBJECT:" box / banner / heading. The subject lives in the email header only.
 - The body must NOT be wrapped in a white card with shadow / border / colored background. Reads like a normal email.
-- The closing block is ALWAYS exactly, in this order: a "Warm regards," paragraph, then a "<strong>${c.senderName}</strong>" paragraph, then a "<strong>${c.senderTitle}</strong>" paragraph, then the signature <div>. Reproduce that signature <div> EXACTLY as shown in the layout above — same borders, colors, font sizes and order. It is mandatory, never drop it and never restyle it. NEVER include phone / LinkedIn / address rows. NEVER include a "Business Development" line. NEVER include the elaborate two-column signature table. NEVER add a separate "Looking forward to hearing from you" line — the CTA paragraph already invites a reply, so the closing is tight.
+- The closing block is ALWAYS exactly, in this order: a "Best Regards," paragraph, then a "<strong>Manatanu Infotech Team</strong>" paragraph, then the signature <div>. The signature <div> MUST contain ONLY the Manatanu logo followed by the website URL (https://manatanuinfotech.com/). Do NOT include any sender name, job title, company name, email address, phone number, LinkedIn, IT Services text, address, or any other contact information. Do NOT restyle the signature beyond the layout shown above. NEVER add a separate "Looking forward to hearing from you" line.
 - The signature contact details are EXACTLY these, never invent others: ${c.email} and ${c.website}.
 - CRITICAL — the email contains EXACTLY ONE <img>: the signature logo shown in the layout above, with that exact src, width and inline style. No banner, no icons, no spacer GIF, no tracking pixel (the sending pipeline appends its own). Any additional <img> is a hard failure. The logo NEVER replaces the text rows beneath it — mail clients block remote images by default, so the signature must still read correctly with the image missing.
 - Body copy total under 220 words.

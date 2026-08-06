@@ -937,11 +937,18 @@ function EditableEmailBody({
   // the original full document so the doctype + skeleton + inline
   // <style> survive. The Send pipeline always receives a complete
   // HTML document this way.
+// Preview-only swap: the real send pipeline needs "cid:manatanu-logo"
+  // (an inline attachment reference, valid only inside a sent email), but
+  // a browser preview has no attachment to resolve it against. Swap it for
+  // the same file served normally from /public just for on-screen display.
+  const CID_LOGO_SRC = "cid:manatanu-logo";
+  const PREVIEW_LOGO_SRC = "/manatanu-logo.jpg";
+
   const bodyInner = (() => {
     const m = body.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    return m ? m[1] : body;
+    const inner = m ? m[1] : body;
+    return inner.split(CID_LOGO_SRC).join(PREVIEW_LOGO_SRC);
   })();
-
   // Initial editor HTML is set once via a ref-based effect so React
   // doesn't re-mount the contentEditable on every keystroke (which
   // would reset the caret position). Only re-syncs when the parent
@@ -963,19 +970,25 @@ function EditableEmailBody({
         contentEditable
         suppressContentEditableWarning
         onInput={(e) => {
-          const newInner = e.currentTarget.innerHTML;
-          lastSyncedRef.current = newInner;
-          // Splice the edited body back into the original document.
-          // Preserves <!doctype>, <head>, <style>, etc.
-          const next = /<body[^>]*>[\s\S]*?<\/body>/i.test(body)
-            ? body.replace(
-                /(<body[^>]*>)[\s\S]*?(<\/body>)/i,
-                `$1${newInner}$2`
-              )
-            : newInner;
-          onChange(next);
-        }}
-        spellCheck
+                  const editedInner = e.currentTarget.innerHTML;
+                  lastSyncedRef.current = editedInner;
+                  // Swap the preview path back to the cid: reference before this
+                  // reaches state/localStorage/Send — the actual email must keep
+                  // using the inline-attachment src, never the browser-only path.
+                  const newInner = editedInner
+                    .split(PREVIEW_LOGO_SRC)
+                    .join(CID_LOGO_SRC);
+                  // Splice the edited body back into the original document.
+                  // Preserves <!doctype>, <head>, <style>, etc.
+                  const next = /<body[^>]*>[\s\S]*?<\/body>/i.test(body)
+                    ? body.replace(
+                        /(<body[^>]*>)[\s\S]*?(<\/body>)/i,
+                        `$1${newInner}$2`
+                      )
+                    : newInner;
+                  onChange(next);
+                }}
+        spellCheck={false}
         className="px-5 py-4 min-h-[420px] outline-none focus:outline-none"
         style={{
           fontFamily: "Arial, Helvetica, sans-serif",
