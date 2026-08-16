@@ -10,13 +10,13 @@ import { useEffect, useState } from "react";
 type Theme = "light" | "dark";
 
 function readInitialTheme(): Theme {
-  if (typeof document === "undefined") return "light";
+  if (typeof document === "undefined") return "dark";
   const attr = document.documentElement.getAttribute("data-theme");
-  return attr === "dark" ? "dark" : "light";
+  return attr === "light" ? "light" : "dark";
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   // Sync state with whatever the layout script set on <html>. Useful
   // when the toggle mounts after the page has been open for a while.
