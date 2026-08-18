@@ -264,20 +264,22 @@ export default function DashboardClient() {
   // Default to "with" (With Email) — actionable jobs with a contact email
   // are the primary view; users can flip to "All Jobs" or "No Email" as
   // needed.
-  const [savedFilterEmail, setSavedFilterEmail] = useState("with");
+  const [savedFilterEmail, setSavedFilterEmail] = useState("all");
   // Scraped date filter — an explicit YYYY-MM-DD pick (HTML
   // <input type="date">). Empty string = no filter; it filters
   // job.capturedDate (when this dashboard captured the row). Only rows
   // whose date EQUALS the picked day pass. Defaults to today so the
   // table opens on the current day's scrape.
-  const [savedFilterScrapedDate, setSavedFilterScrapedDate] = useState(() => {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  });
+  // const [savedFilterScrapedDate, setSavedFilterScrapedDate] = useState(() => {
+  //   const d = new Date();
+  //   const yyyy = d.getFullYear();
+  //   const mm = String(d.getMonth() + 1).padStart(2, "0");
+  //   const dd = String(d.getDate()).padStart(2, "0");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // });
 
+  const [savedFilterScrapedDate, setSavedFilterScrapedDate] = useState("");
+  
   // All Jobs table pagination
   const [currentJobsPage, setCurrentJobsPage] = useState(1);
 
