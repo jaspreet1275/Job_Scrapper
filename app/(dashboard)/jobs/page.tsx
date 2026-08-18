@@ -6,4 +6,7 @@ import DashboardClient from "../../dashboard-client";
 // /jobs/[jobId] (dynamic segment, separate file).
 export default function AllJobsPage() {
   return <DashboardClient />;
+  
 }
+
+
