@@ -474,6 +474,7 @@ Do not output anything before "SUBJECT:" or after the body. Do not wrap in code 
     const lead: PromptLead = {
       jobTitle: job.title,
       companyName,
+      contactName: contactName || "",
       location: job.location,
       jobType: job.jobType,
       jobDescription,
