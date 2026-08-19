@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -165,6 +165,7 @@ export default function DashboardClient() {
   // `activePage` always matches the URL the user is looking at.
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const activePage = pathnameToPage(pathname);
   // Helper used by non-link CTAs (e.g. "head to Scrape Jobs" empty
   // state). Pushes to the right path; the pathname hook then updates
@@ -282,6 +283,86 @@ export default function DashboardClient() {
   
   // All Jobs table pagination
   const [currentJobsPage, setCurrentJobsPage] = useState(1);
+
+  // Tracks the initial URL -> state restoration so the generic filter-change
+  // pagination reset below does not overwrite a page restored from the URL.
+  const restoringJobsFiltersRef = useRef(true);
+
+  // Restore All Jobs filters + pagination from the URL so browser Back/Forward,
+  // refresh, and direct navigation preserve the exact table state.
+  useEffect(() => {
+    if (activePage !== "saved-all") return;
+
+    restoringJobsFiltersRef.current = true;
+
+    setSavedSearch(searchParams.get("search") || "");
+    setSavedFilterPlatform(searchParams.get("platform") || "all");
+    setSavedFilterStatus(searchParams.get("status") || "all");
+    setSavedFilterEmail(searchParams.get("email") || "all");
+    setSavedFilterScrapedDate(searchParams.get("date") || "");
+
+    const page = Number(searchParams.get("page") || "1");
+    setCurrentJobsPage(Number.isFinite(page) && page > 0 ? page : 1);
+  }, [activePage, searchParams]);
+
+  // Write All Jobs filters + pagination to the URL. The URL becomes the
+  // durable navigation state while the existing React state continues to
+  // drive the filtering/rendering logic below.
+  const updateJobsUrl = useCallback(
+    (
+      updates: Partial<{
+        search: string;
+        platform: string;
+        status: string;
+        email: string;
+        date: string;
+        page: number;
+      }>
+    ) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      const values = {
+        search: savedSearch,
+        platform: savedFilterPlatform,
+        status: savedFilterStatus,
+        email: savedFilterEmail,
+        date: savedFilterScrapedDate,
+        page: currentJobsPage,
+        ...updates,
+      };
+
+      if (values.search) params.set("search", values.search);
+      else params.delete("search");
+
+      if (values.platform !== "all") params.set("platform", values.platform);
+      else params.delete("platform");
+
+      if (values.status !== "all") params.set("status", values.status);
+      else params.delete("status");
+
+      if (values.email !== "all") params.set("email", values.email);
+      else params.delete("email");
+
+      if (values.date) params.set("date", values.date);
+      else params.delete("date");
+
+      if (values.page > 1) params.set("page", String(values.page));
+      else params.delete("page");
+
+      const query = params.toString();
+      router.replace(query ? `/jobs?${query}` : "/jobs", { scroll: false });
+    },
+    [
+      searchParams,
+      savedSearch,
+      savedFilterPlatform,
+      savedFilterStatus,
+      savedFilterEmail,
+      savedFilterScrapedDate,
+      currentJobsPage,
+      router,
+    ]
+  );
 
   // (RocketReach credit pill removed from UI — state + fetch deleted.)
 
@@ -1843,6 +1924,10 @@ export default function DashboardClient() {
   // otherwise a user filtering down to 5 results while sitting on page 4
   // sees an empty table.
   useEffect(() => {
+    if (restoringJobsFiltersRef.current) {
+      restoringJobsFiltersRef.current = false;
+      return;
+    }
     setCurrentJobsPage(1);
   }, [savedSearch, savedFilterPlatform, savedFilterStatus, savedFilterEmail, savedFilterScrapedDate]);
 
@@ -3598,7 +3683,16 @@ export default function DashboardClient() {
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <select
                     value={savedFilterPlatform}
-                    onChange={(e) => setSavedFilterPlatform(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      restoringJobsFiltersRef.current = true;
+                      setSavedFilterPlatform(value);
+                      setCurrentJobsPage(1);
+                      updateJobsUrl({
+                        platform: value,
+                        page: 1,
+                      });
+                    }}
                     className="surface px-3 py-2 text-[13px] cursor-pointer focus:border-[color:var(--accent)] focus:outline-none"
                   >
                     <option value="all">All Platforms</option>
@@ -3607,7 +3701,16 @@ export default function DashboardClient() {
                   </select>
                   <select
                     value={savedFilterStatus}
-                    onChange={(e) => setSavedFilterStatus(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      restoringJobsFiltersRef.current = true;
+                      setSavedFilterStatus(value);
+                      setCurrentJobsPage(1);
+                      updateJobsUrl({
+                        status: value,
+                        page: 1,
+                      });
+                    }}
                     className="surface px-3 py-2 text-[13px] cursor-pointer focus:border-[color:var(--accent)] focus:outline-none"
                   >
                     <option value="all">All Statuses</option>
@@ -3617,7 +3720,16 @@ export default function DashboardClient() {
                   </select>
                   <select
                     value={savedFilterEmail}
-                    onChange={(e) => setSavedFilterEmail(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      restoringJobsFiltersRef.current = true;
+                      setSavedFilterEmail(value);
+                      setCurrentJobsPage(1);
+                      updateJobsUrl({
+                        email: value,
+                        page: 1,
+                      });
+                    }}
                     className="surface px-3 py-2 text-[13px] cursor-pointer focus:border-[color:var(--accent)] focus:outline-none"
                   >
                     <option value="all">All Jobs</option>
@@ -3631,7 +3743,16 @@ export default function DashboardClient() {
                     <input
                       type="date"
                       value={savedFilterScrapedDate}
-                      onChange={(e) => setSavedFilterScrapedDate(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        restoringJobsFiltersRef.current = true;
+                        setSavedFilterScrapedDate(value);
+                        setCurrentJobsPage(1);
+                        updateJobsUrl({
+                          date: value,
+                          page: 1,
+                        });
+                      }}
                       className="bg-transparent outline-none text-[13px] text-[color:var(--foreground)] [color-scheme:light] dark:[color-scheme:dark]"
                       title="Filter by scraped date (when this dashboard captured it)"
                     />
@@ -3647,11 +3768,14 @@ export default function DashboardClient() {
                         // the today-by-default scraped-date pick. Defaults
                         // re-apply on the next page mount only; clicking Clear
                         // is the explicit "show me every job in the table" path.
+                        restoringJobsFiltersRef.current = true;
                         setSavedSearch("");
                         setSavedFilterPlatform("all");
                         setSavedFilterStatus("all");
                         setSavedFilterEmail("all");
                         setSavedFilterScrapedDate("");
+                        setCurrentJobsPage(1);
+                        router.replace("/jobs", { scroll: false });
                       }}
                       className="text-[12px] px-3 py-2 rounded-md text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--surface-2)] transition-colors"
                     >
@@ -3673,7 +3797,16 @@ export default function DashboardClient() {
                         SIDEBAR_ITEMS.find((s) => s.id === activePage)?.label ?? "jobs"
                       }...`}
                       value={savedSearch}
-                      onChange={(e) => setSavedSearch(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        restoringJobsFiltersRef.current = true;
+                        setSavedSearch(value);
+                        setCurrentJobsPage(1);
+                        updateJobsUrl({
+                          search: value,
+                          page: 1,
+                        });
+                      }}
                       className="flex-1 bg-transparent outline-none text-[14px] text-[color:var(--foreground)] placeholder:text-[color:var(--muted-2)]"
                     />
                   </div>
@@ -4094,7 +4227,11 @@ export default function DashboardClient() {
                     {totalJobsPages > 1 && (
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <button
-                          onClick={() => setCurrentJobsPage((p) => Math.max(1, p - 1))}
+                          onClick={() => {
+                            const nextPage = Math.max(1, activeJobsPage - 1);
+                            setCurrentJobsPage(nextPage);
+                            updateJobsUrl({ page: nextPage });
+                          }}
                           disabled={activeJobsPage === 1}
                           className="w-7 h-7 inline-flex items-center justify-center rounded-md bg-[var(--surface-2)] text-[color:var(--muted)] text-[12px] hover:text-[color:var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           title="Previous page"
@@ -4112,7 +4249,10 @@ export default function DashboardClient() {
                           ) : (
                             <button
                               key={entry}
-                              onClick={() => setCurrentJobsPage(entry)}
+                              onClick={() => {
+                                setCurrentJobsPage(entry);
+                                updateJobsUrl({ page: entry });
+                              }}
                               className={`w-7 h-7 inline-flex items-center justify-center rounded-md text-[12px] font-medium transition-colors ${
                                 entry === activeJobsPage
                                   ? "bg-[var(--accent-soft)] text-[color:var(--accent)]"
@@ -4124,9 +4264,11 @@ export default function DashboardClient() {
                           )
                         )}
                         <button
-                          onClick={() =>
-                            setCurrentJobsPage((p) => Math.min(totalJobsPages, p + 1))
-                          }
+                          onClick={() => {
+                            const nextPage = Math.min(totalJobsPages, activeJobsPage + 1);
+                            setCurrentJobsPage(nextPage);
+                            updateJobsUrl({ page: nextPage });
+                          }}
                           disabled={activeJobsPage === totalJobsPages}
                           className="w-7 h-7 inline-flex items-center justify-center rounded-md bg-[var(--surface-2)] text-[color:var(--muted)] text-[12px] hover:text-[color:var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           title="Next page"

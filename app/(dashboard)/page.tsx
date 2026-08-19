@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import DashboardClient from "../dashboard-client";
 
 // Root route — Scrape Jobs view. The shared DashboardClient component
@@ -6,5 +7,9 @@ import DashboardClient from "../dashboard-client";
 // /analytics/page.tsx) gives us proper path-based URLs without
 // duplicating any state or markup.
 export default function HomePage() {
-  return <DashboardClient />;
+  return (
+    <Suspense fallback={null}>
+      <DashboardClient />
+    </Suspense>
+  );
 }
