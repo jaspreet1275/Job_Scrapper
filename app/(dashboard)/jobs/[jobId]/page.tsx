@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from "react";
+import { stripRecruiterNameCard } from "@/lib/utils/html-to-text";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { stripRecruiterNameCard } from "@/lib/utils/html-to-text";
 // ThemeToggle now lives in the shared Sidebar (rendered by
 // /(dashboard)/layout.tsx) so the detail page no longer imports it.
 
@@ -20,10 +21,10 @@ import { stripRecruiterNameCard } from "@/lib/utils/html-to-text";
 // Shared types — see types/index.ts. Locally-scoped aliases keep the
 // rest of the file's code (which uses these by bare name) untouched.
 import type {
-  DetailCandidate as Candidate,
-  JobRow,
-  EmailRow,
   JobDetailResponse as ApiResponse,
+  DetailCandidate as Candidate,
+  EmailRow,
+  JobRow,
 } from "@/types";
 
 type Generated = { subject: string; body: string };
@@ -42,6 +43,7 @@ export default function JobDetailPage({
   params: Promise<{ jobId: string }>;
 }) {
   const { jobId } = use(params);
+  const router = useRouter();
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [generated, setGenerated] = useState<Generated | null>(null);
@@ -379,12 +381,14 @@ export default function JobDetailPage({
       {/* ── Top breadcrumb ───────────────────────────────────────────── */}
       <header className="px-3 py-3 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-md sticky top-0 z-20">
         <div className="text-[12px] text-[color:var(--muted)] inline-flex items-center gap-1.5">
-          <a
-            href="/jobs"
-            className="hover:text-[color:var(--foreground)] transition-colors"
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-1.5 hover:text-[color:var(--foreground)] transition-colors"
           >
-            ← All Jobs
-          </a>
+            <span>‹</span>
+            <span>All Jobs</span>
+          </button>
           <span className="text-[color:var(--muted-2)]">/</span>
           <span className="truncate max-w-[40ch]">{job.title}</span>
         </div>
