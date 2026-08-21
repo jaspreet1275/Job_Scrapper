@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Sidebar — shared across every page in the /(dashboard) route group.
 // Pulls savedJobs.length (for the All Jobs count badge) and the
@@ -131,7 +131,7 @@ export function Sidebar() {
           className="hidden md:flex absolute -right-3 top-7 w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border-strong)] text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--border-strong)] items-center justify-center text-[10px] transition-colors"
           aria-label="Toggle sidebar"
         >
-          {sidebarOpen ? "◀" : "▶"}
+          {sidebarOpen ? "✕" : "☰"}
         </button>
 
         {/* Nav — proper Next.js <Link> components for path-based routing.
