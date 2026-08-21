@@ -1,12 +1,11 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import * as XLSX from "xlsx";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { PerformanceChart } from "@/components/analytics/PerformanceChart";
 import { DateRangePicker } from "@/components/analytics/DateRangePicker";
+import { PerformanceChart } from "@/components/analytics/PerformanceChart";
 import { useDashboard } from "@/contexts/DashboardContext";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import * as XLSX from "xlsx";
 
 // Map a Next.js pathname to the dashboard's internal `activePage` value
 // (kept around because dozens of branches depend on the string). Single
@@ -75,6 +74,7 @@ const LEAD_STATUSES = [
   { id: "sent", label: "Sent", color: "blue" },
   { id: "opened", label: "Opened", color: "cyan" },
   { id: "replied", label: "Replied", color: "yellow" },
+  { id: "read" , label: "Read" , color: "green"}
 ];
 
 // Maps any legacy or new status value to one of the four supported ids.
@@ -153,11 +153,11 @@ function buildPageList(current: number, total: number): (number | "…")[] {
 // Shared types live in `types/index.ts` — see that file for field-level
 // docs. Bare-name usage in this file (Job, Candidate, EnrichedLead) is
 // preserved so existing call-sites don't need to change.
-import type { Job, Candidate, EnrichedLead } from "@/types";
+import type { Candidate, EnrichedLead, Job } from "@/types";
 // Local aliases satisfy the "unused import" lint when these types are
 // only referenced via in-scope JSX prop / state generics that get
 // erased by the TS compiler.
-export type { Job as _Job, Candidate as _Candidate, EnrichedLead as _EnrichedLead };
+export type { Candidate as _Candidate, EnrichedLead as _EnrichedLead, Job as _Job };
 
 export default function DashboardClient() {
   // Pathname is the source of truth for the active page. The sidebar
@@ -3833,6 +3833,8 @@ export default function DashboardClient() {
                         "bg-[var(--warning-soft)] text-[color:var(--warning)] border-[color:var(--warning)]/30",
                       replied:
                         "bg-[var(--accent)] text-white border-[color:var(--accent)]",
+                        read:
+                        "bg-green-500/15 text-green-500 border-green-500/40",
                     };
                     const cleanCompany = job.company
                       ?.replace(/\s*\(.*\)/, "")
@@ -3889,7 +3891,9 @@ export default function DashboardClient() {
                           <div className="flex gap-1.5 items-center shrink-0">
                             {job.jobId && (
                               <a
-                                href={`/jobs/${job.jobId}`}
+                                href={`/jobs/${job.jobId}?returnTo=${encodeURIComponent(
+                                  `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
+                                )}`}
                                 className="w-8 h-8 inline-flex items-center justify-center rounded-md text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--surface-2)] transition-colors"
                                 title="View"
                                 aria-label="View job"
@@ -4131,6 +4135,7 @@ export default function DashboardClient() {
                                 sent: "bg-indigo-500/15 text-indigo-500 border-indigo-500/40",
                                 opened: "bg-amber-500/15 text-amber-500 border-amber-500/40",
                                 replied: "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
+                                read: "bg-green-500/15 text-green-500 border-green-500/40",
                               };
                               return (
                                 <span
@@ -4156,7 +4161,9 @@ export default function DashboardClient() {
                             <div className="flex gap-1.5 items-center">
                               {job.jobId && (
                                 <a
-                                  href={`/jobs/${job.jobId}`}
+                                  href={`/jobs/${job.jobId}?returnTo=${encodeURIComponent(
+                                    `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
+                                  )}`}
                                   className="w-7 h-7 inline-flex items-center justify-center rounded-md text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--surface-2)] transition-colors"
                                   title="View"
                                   aria-label="View job"

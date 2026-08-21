@@ -1,7 +1,8 @@
 "use client";
 
+import { useDashboard } from "@/contexts/DashboardContext";
 import { stripRecruiterNameCard } from "@/lib/utils/html-to-text";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,6 +45,8 @@ export default function JobDetailPage({
 }) {
   const { jobId } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { setSavedJobs } = useDashboard();
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [generated, setGenerated] = useState<Generated | null>(null);
@@ -206,6 +209,27 @@ export default function JobDetailPage({
       const now = Date.now();
       setGenerated(next);
       setGeneratedAt(now);
+
+      const statusRes = await fetch(`/api/jobs/${jobId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email_status: "read",
+          }),
+        });
+
+        if (statusRes.ok) {
+          setSavedJobs((prev) =>
+            prev.map((job) =>
+              job.jobId === jobId
+                ? { ...job, status: "read" }
+                : job
+            )
+          );
+        }
+        
       try {
         localStorage.setItem(
           cacheKey(jobId),
@@ -383,11 +407,19 @@ export default function JobDetailPage({
         <div className="text-[12px] text-[color:var(--muted)] inline-flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => {
+                const returnTo = searchParams.get("returnTo");
+
+                if (returnTo) {
+                  router.push(returnTo);
+                } else {
+                  router.push("/jobs");
+                }
+              }}
             className="inline-flex items-center gap-1.5 hover:text-[color:var(--foreground)] transition-colors"
           >
             <span>‹</span>
-            <span>All Jobs</span>
+            <span>Back to Jobs</span>
           </button>
           <span className="text-[color:var(--muted-2)]">/</span>
           <span className="truncate max-w-[40ch]">{job.title}</span>

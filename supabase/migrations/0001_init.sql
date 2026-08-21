@@ -1,4 +1,4 @@
--- =============================================================================
+replied-- =============================================================================
 -- Job Scraper Dashboard — Initial Schema
 -- Tables: jobs_v2 (scraped postings) + email_tracking (outreach/opens/replies).
 -- settings holds the single-row dashboard config.

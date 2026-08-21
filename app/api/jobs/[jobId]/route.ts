@@ -75,6 +75,7 @@ const ALLOWED_PATCH_FIELDS = new Set([
   "location",
   "title",
   "company",
+  "email_status",
 ]);
 
 export async function PATCH(
