@@ -279,9 +279,7 @@ export async function POST(req: NextRequest) {
       // But email_tracking.body is a record/audit field — no UI renders it
       // as HTML — so store the readable plain-text version. Saves a human
       // browsing the table from wading through <!doctype html> markup.
-      const bodyForRecord = looksLikeHtmlDocument(finalBody)
-        ? htmlToPlainText(finalBody)
-        : finalBody;
+      const bodyForRecord = finalBody;
       const trackingPayload = {
         job_id: jobId,                       // jobs_v2.job_id (text)
         stage: Number(stage) || 1,

@@ -374,7 +374,7 @@ export default function JobDetailPage({
     return (
       <>
         <div className="px-7 pt-7">
-          <div className="h-7 w-2/3 bg-[var(--surface-2)] rounded animate-pulse" />
+          <div className="h-7 w-2/3 bg-(--surface-2) rounded animate-pulse" />
           <div className="h-32 surface mt-6 animate-pulse" />
           <div className="h-64 surface mt-6 animate-pulse" />
         </div>
@@ -386,7 +386,7 @@ export default function JobDetailPage({
       <>
         <div className="px-7 pt-7">
           <h1 className="text-2xl font-semibold">Job not found</h1>
-          <p className="text-[color:var(--muted)] mt-2">
+          <p className="text-(--muted) mt-2">
             {data?.error || "Unknown error"}
           </p>
         </div>
@@ -403,8 +403,8 @@ export default function JobDetailPage({
   return (
     <>
       {/* ── Top breadcrumb ───────────────────────────────────────────── */}
-      <header className="px-3 py-3 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-md sticky top-0 z-20">
-        <div className="text-[12px] text-[color:var(--muted)] inline-flex items-center gap-1.5">
+      <header className="px-3 py-3 border-b border-(--border) bg-(--background)/85 backdrop-blur-md sticky top-0 z-20">
+        <div className="text-[12px] text-(--muted) inline-flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => {
@@ -416,30 +416,30 @@ export default function JobDetailPage({
                   router.push("/jobs");
                 }
               }}
-            className="inline-flex items-center gap-1.5 hover:text-[color:var(--foreground)] transition-colors"
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <span>‹</span>
             <span>Back to Jobs</span>
           </button>
-          <span className="text-[color:var(--muted-2)]">/</span>
+          <span className="text-(--muted-2)">/</span>
           <span className="truncate max-w-[40ch]">{job.title}</span>
         </div>
       </header>
 
       {/* ── Detail header: title + contact card ───────────────────────── */}
       <div className="px-7 pt-7">
-        <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.015em] break-words">
+        <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.015em] wrap-break-word">
           {job.url ? (
             <a
               href={job.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[color:var(--foreground)] hover:text-[color:var(--accent)] transition-colors"
+              className="text-foreground hover:text-(--accent) transition-colors"
             >
               {job.title}
             </a>
           ) : (
-            <span className="text-[color:var(--foreground)]">{job.title}</span>
+            <span className="text-foreground">{job.title}</span>
           )}
         </h1>
 
@@ -447,15 +447,15 @@ export default function JobDetailPage({
             avatar + meta line (with bottom border), bottom is a
             4-column Name/Title/Email/LinkedIn grid that drops to 2
             columns under md and 1 column on small phones. */}
-        <div className="surface mt-[22px] px-[22px] py-[18px]">
-          <div className="flex items-center gap-3 pb-3.5 mb-4 border-b border-[var(--border)]">
+        <div className="surface mt-5.5 px-5.5 py-4.5">
+          <div className="flex items-center gap-3 pb-3.5 mb-4 border-b border-(--border)">
             {/* Company-initial tile — accent-soft bg with the first
                 letter of the company. Pure visual anchor, no link. */}
-            <div className="w-9 h-9 rounded-md bg-[var(--accent-soft)] text-[color:var(--accent)] flex items-center justify-center text-[14px] font-semibold shrink-0 uppercase border border-[color:var(--accent)]/20">
+            <div className="w-9 h-9 rounded-md bg-(--accent-soft) text-(--accent) flex items-center justify-center text-[14px] font-semibold shrink-0 uppercase border border-(--accent)/20">
               {(cleanCompany || "?").trim().charAt(0)}
             </div>
-            <p className="text-[14px] text-[color:var(--muted)] min-w-0 truncate">
-              <span className="text-[color:var(--foreground)] font-medium">
+            <p className="text-[14px] text-(--muted) min-w-0 truncate">
+              <span className="text-foreground font-medium">
                 {cleanCompany}
               </span>
               {hasValue(job.location) && (
@@ -472,7 +472,7 @@ export default function JobDetailPage({
               )}
             </p>
           </div>
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-[18px]">
+          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4.5">
             <ContactField label="Name" value={candidate.name} />
             <ContactField label="Title" value={candidate.title} />
             <ContactField
@@ -500,13 +500,13 @@ export default function JobDetailPage({
         <SectionHeading>Description</SectionHeading>
         <div className="surface mt-2.5 p-7 text-[15px] leading-[1.75]">
           {refetchingDesc ? (
-            <span className="text-[color:var(--muted-2)]">
+            <span className="text-(--muted-2)">
               Fetching the full description from LinkedIn…
             </span>
           ) : description ? (
             <DescriptionMarkdown source={description} />
           ) : (
-            <span className="text-[color:var(--muted-2)]">
+            <span className="text-(--muted-2)">
               No description scraped.
             </span>
           )}
@@ -525,7 +525,7 @@ export default function JobDetailPage({
               panel below, so the user can optionally steer the next run
               with a custom instruction (or just hit Regenerate empty for
               a default re-roll). */}
-        <div className="mt-[22px] flex items-end gap-3 flex-wrap">
+        <div className="mt-5.5 flex items-end gap-3 flex-wrap">
           <button
             onClick={() => {
               if (!generated) {
@@ -542,8 +542,8 @@ export default function JobDetailPage({
             disabled={generating || !candidate.email}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${
               promptOpen
-                ? "bg-[var(--accent)] text-[color:var(--foreground)]"
-                : "bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[color:var(--foreground)]"
+                ? "bg-(--accent) text-foreground"
+                : "bg-(--accent) hover:bg-(--accent-hover) text-foreground"
             }`}
             title={
               candidate.email
@@ -566,7 +566,7 @@ export default function JobDetailPage({
             <div className="flex flex-col gap-1">
               <label
                 htmlFor="prompt-picker"
-                className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)]"
+                className="text-[10px] font-semibold uppercase tracking-[0.12em] text-(--muted-2)"
               >
                 Choose Custom prompt
               </label>
@@ -576,7 +576,7 @@ export default function JobDetailPage({
                 onChange={(e) => setSelectedPromptId(e.target.value)}
                 disabled={generating}
                 title="Pick a saved prompt as the base (or leave on the fixed Manatanu prompt). Used for both Generate and Re-generate."
-                className="px-3 py-2 rounded-md bg-[var(--surface-2)] border border-[var(--border)] text-[13px] text-[color:var(--foreground)] focus:outline-none focus:border-[color:var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors max-w-[220px]"
+                className="px-3 py-2 rounded-md bg-(--surface-2) border border-(--border) text-[13px] text-foreground focus:outline-none focus:border-(--accent) disabled:opacity-40 disabled:cursor-not-allowed transition-colors max-w-55"
               >
                 <option value="">Choose Custom prompt</option>
                 {savedPrompts.map((p) => (
@@ -588,7 +588,7 @@ export default function JobDetailPage({
             </div>
           )}
           {lastGenerated && (
-            <span className="ml-auto self-center text-[12px] text-[color:var(--muted)]">
+            <span className="ml-auto self-center text-[12px] text-(--muted)">
               Last generated · {lastGenerated}
             </span>
           )}
@@ -605,8 +605,8 @@ export default function JobDetailPage({
           <div className="surface mt-3 p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-[color:var(--accent)] text-[14px]">✨</span>
-                <h2 className="text-[14px] font-semibold text-[color:var(--foreground)] tracking-[-0.01em]">
+                <span className="text-(--accent) text-[14px]">✨</span>
+                <h2 className="text-[14px] font-semibold text-foreground tracking-[-0.01em]">
                   Add instructions for the LLM
                 </h2>
               </div>
@@ -617,7 +617,7 @@ export default function JobDetailPage({
                   setPromptDraft("");
                 }}
                 disabled={generating}
-                className="w-7 h-7 inline-flex items-center justify-center rounded-md text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-7 h-7 inline-flex items-center justify-center rounded-md text-(--muted) hover:text-foreground hover:bg-(--surface-2) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title="Close"
               >
                 ✕
@@ -635,7 +635,7 @@ export default function JobDetailPage({
               rows={4}
               autoFocus
               disabled={generating}
-              className="w-full px-3 py-2.5 rounded-md bg-[var(--surface-2)] border border-[var(--border)] text-[13px] text-[color:var(--text)] placeholder:text-[color:var(--muted-2)] focus:outline-none focus:border-[color:var(--accent)] transition-colors resize-y leading-relaxed"
+              className="w-full px-3 py-2.5 rounded-md bg-(--surface-2) border border-(--border) text-[13px] text-(--text) placeholder:text-(--muted-2) focus:outline-none focus:border-(--accent) transition-colors resize-y leading-relaxed"
             />
 
             {/* Quick chips — append to the textarea so the user can
@@ -657,15 +657,15 @@ export default function JobDetailPage({
                     )
                   }
                   disabled={generating}
-                  className="text-[11.5px] px-2.5 py-1 rounded-md bg-[var(--surface-2)] text-[color:var(--muted)] border border-[var(--border)] hover:text-[color:var(--foreground)] hover:border-[var(--border-strong)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="text-[11.5px] px-2.5 py-1 rounded-md bg-(--surface-2) text-(--muted) border border-(--border) hover:text-foreground hover:border-(--border-strong) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {chip.label}
                 </button>
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-[var(--border)] flex items-center justify-between gap-3 flex-wrap">
-              <span className="text-[11.5px] text-[color:var(--muted-2)]">
+            <div className="mt-4 pt-4 border-t border-(--border) flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-[11.5px] text-(--muted-2)">
                 Base prompt + your instructions → LLM
               </span>
               <div className="flex items-center gap-2">
@@ -681,7 +681,7 @@ export default function JobDetailPage({
                     setPromptDraft("");
                   }}
                   disabled={generating}
-                  className="px-3.5 py-2 rounded-md text-[13px] font-medium text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="px-3.5 py-2 rounded-md text-[13px] font-medium text-(--muted) hover:text-foreground hover:bg-(--surface-2) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   Cancel
                 </button>
@@ -701,7 +701,7 @@ export default function JobDetailPage({
                     setPromptDraft("");
                   }}
                   disabled={generating}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[color:var(--foreground)] text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-(--accent) hover:bg-(--accent-hover) text-foreground text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {generating ? "Regenerating…" : "Regenerate ↗"}
                 </button>
@@ -712,22 +712,22 @@ export default function JobDetailPage({
 
         {/* Generated email card */}
         {generated && (
-          <div className="surface mt-3.5 px-[22px] py-[22px]">
+          <div className="surface mt-3.5 px-5.5 py-5.5">
             {/* Subject — always inline-editable. Edits flow through
                 updateGenerated() so they persist to localStorage and
                 are picked up by the Send action below. */}
-            <label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)]">
+            <label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-(--muted-2)">
               Subject
             </label>
             <input
               type="text"
               value={generated.subject}
               onChange={(e) => updateGenerated({ subject: e.target.value })}
-              className="w-full mt-1.5 px-3 py-2 text-[15px] font-medium bg-[var(--surface-2)] border border-[var(--border)] rounded-md text-[color:var(--foreground)] focus:outline-none focus:border-[color:var(--accent)] transition-colors"
+              className="w-full mt-1.5 px-3 py-2 text-[15px] font-medium bg-(--surface-2) border border-(--border) rounded-md text-foreground focus:outline-none focus:border-(--accent) transition-colors"
             />
 
-            <div className="mt-[18px]">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)]">
+            <div className="mt-4.5">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-(--muted-2)">
                 Body
               </label>
               {/* Always-on inline editor. The user can click anywhere
@@ -744,13 +744,13 @@ export default function JobDetailPage({
             {/* Divider strip — gradient line, accent on the left fading
                 to transparent on the right. Subtler than a flat border
                 while still separating the body from the send actions. */}
-            <div className="mt-[22px] pt-[18px] relative flex items-center gap-3.5 flex-wrap">
+            <div className="mt-5.5 pt-4.5 relative flex items-center gap-3.5 flex-wrap">
               <div
                 aria-hidden="true"
-                className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-[var(--accent)]/40 via-[var(--border)] to-transparent"
+                className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-(--accent)/40 via-(--border) to-transparent"
               />
               {sentInfo ? (
-                <span className="text-[12px] text-[color:var(--accent)]">
+                <span className="text-[12px] text-(--accent)">
                   ✓ Sent to {sentInfo.to}
                 </span>
               ) : (
@@ -758,14 +758,14 @@ export default function JobDetailPage({
                   <button
                     onClick={send}
                     disabled={sending || !candidate.email}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[color:var(--foreground)] text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-(--accent) hover:bg-(--accent-hover) text-foreground text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     {sending ? "Sending…" : "Send Email"}
                   </button>
                   {candidate.email && (
-                    <span className="text-[12px] text-[color:var(--muted)]">
+                    <span className="text-[12px] text-(--muted)">
                       To{" "}
-                      <span className="text-[color:var(--foreground)] font-medium">
+                      <span className="text-foreground font-medium">
                         {candidate.email}
                       </span>
                     </span>
@@ -784,7 +784,7 @@ export default function JobDetailPage({
           <div className="mt-9">
             <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
               <SectionHeading>Email History</SectionHeading>
-              <span className="text-[12px] text-[color:var(--muted)]">
+              <span className="text-[12px] text-(--muted)">
                 {data.emails.length}{" "}
                 {data.emails.length === 1 ? "email" : "emails"}
               </span>
@@ -798,7 +798,7 @@ export default function JobDetailPage({
         )}
 
         {/* Bottom breathing room — matches the mockup's trailing 60px. */}
-        <div className="h-[60px]" />
+        <div className="h-15" />
       </div>
     </>
   );
@@ -922,7 +922,7 @@ function preprocessDescription(raw: string): string {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--muted-2)]">
+    <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--muted-2)">
       {children}
     </h2>
   );
@@ -961,7 +961,7 @@ function EditableEmailBody({
         value={body}
         onChange={(e) => onChange(e.target.value)}
         rows={16}
-        className="w-full mt-4 px-4 py-3 rounded-md border border-[var(--border)] bg-white text-[14px] leading-[1.6] text-[#333] focus:outline-none focus:border-[color:var(--accent)] resize-y transition-colors"
+        className="w-full mt-4 px-4 py-3 rounded-md border border-(--border) bg-white text-[14px] leading-[1.6] text-[#333] focus:outline-none focus:border-(--accent) resize-y transition-colors"
         style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
       />
     );
@@ -1000,7 +1000,7 @@ function EditableEmailBody({
   }, [bodyInner]);
 
   return (
-    <div className="mt-4 rounded-md overflow-hidden border border-[var(--border)] bg-white">
+    <div className="mt-4 rounded-md overflow-hidden border border-(--border) bg-white">
       <div
         ref={editorRef}
         contentEditable
@@ -1025,7 +1025,7 @@ function EditableEmailBody({
                   onChange(next);
                 }}
         spellCheck={false}
-        className="px-5 py-4 min-h-[420px] outline-none focus:outline-none"
+        className="px-5 py-4 min-h-105 outline-none focus:outline-none"
         style={{
           fontFamily: "Arial, Helvetica, sans-serif",
           fontSize: "14px",
@@ -1049,71 +1049,71 @@ function DescriptionMarkdown({ source }: { source: string }) {
       remarkPlugins={[remarkGfm]}
       components={{
         p: ({ children }) => (
-          <p className="text-[color:var(--text)] [&:not(:first-child)]:mt-4">
+          <p className="text-(--text) not-first:mt-4">
             {children}
           </p>
         ),
         strong: ({ children }) => (
-          <strong className="text-[color:var(--foreground)] font-semibold">{children}</strong>
+          <strong className="text-foreground font-semibold">{children}</strong>
         ),
         em: ({ children }) => <em className="italic">{children}</em>,
         h1: ({ children }) => (
-          <h1 className="text-[18px] font-semibold text-[color:var(--foreground)] mt-5 first:mt-0">
+          <h1 className="text-[18px] font-semibold text-foreground mt-5 first:mt-0">
             {children}
           </h1>
         ),
         h2: ({ children }) => (
-          <h2 className="text-[16px] font-semibold text-[color:var(--foreground)] mt-5 first:mt-0">
+          <h2 className="text-[16px] font-semibold text-foreground mt-5 first:mt-0">
             {children}
           </h2>
         ),
         h3: ({ children }) => (
-          <h3 className="text-[15px] font-semibold text-[color:var(--foreground)] mt-4 first:mt-0">
+          <h3 className="text-[15px] font-semibold text-foreground mt-4 first:mt-0">
             {children}
           </h3>
         ),
         ul: ({ children }) => (
-          <ul className="list-disc pl-5 mt-3 space-y-1.5 marker:text-[color:var(--muted-2)]">
+          <ul className="list-disc pl-5 mt-3 space-y-1.5 marker:text-(--muted-2)">
             {children}
           </ul>
         ),
         ol: ({ children, start }) => (
           <ol
             start={start}
-            className="list-decimal pl-5 mt-3 space-y-1.5 marker:text-[color:var(--muted-2)]"
+            className="list-decimal pl-5 mt-3 space-y-1.5 marker:text-(--muted-2)"
           >
             {children}
           </ol>
         ),
         li: ({ children }) => (
-          <li className="text-[color:var(--text)] leading-[1.6]">{children}</li>
+          <li className="text-(--text) leading-[1.6]">{children}</li>
         ),
         a: ({ href, children }) => (
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[color:var(--accent)] hover:underline"
+            className="text-(--accent) hover:underline"
           >
             {children}
           </a>
         ),
         code: ({ children }) => (
-          <code className="px-1.5 py-0.5 rounded bg-[var(--surface-2)] border border-[var(--border)] text-[13px] font-mono text-[color:var(--text)]">
+          <code className="px-1.5 py-0.5 rounded bg-(--surface-2) border border-(--border) text-[13px] font-mono text-(--text)">
             {children}
           </code>
         ),
         pre: ({ children }) => (
-          <pre className="mt-3 p-3 rounded-md bg-[var(--surface-2)] border border-[var(--border)] overflow-x-auto text-[13px] leading-relaxed">
+          <pre className="mt-3 p-3 rounded-md bg-(--surface-2) border border-(--border) overflow-x-auto text-[13px] leading-relaxed">
             {children}
           </pre>
         ),
         blockquote: ({ children }) => (
-          <blockquote className="mt-3 pl-3 border-l-2 border-[var(--accent)]/40 text-[color:var(--muted)] italic">
+          <blockquote className="mt-3 pl-3 border-l-2 border-(--accent)/40 text-(--muted) italic">
             {children}
           </blockquote>
         ),
-        hr: () => <hr className="my-5 border-[var(--border)]" />,
+        hr: () => <hr className="my-5 border-(--border)" />,
         table: ({ children }) => (
           <div className="overflow-x-auto mt-3">
             <table className="w-full text-[13px] border-collapse">
@@ -1122,12 +1122,12 @@ function DescriptionMarkdown({ source }: { source: string }) {
           </div>
         ),
         th: ({ children }) => (
-          <th className="text-left px-3 py-2 border-b border-[var(--border)] text-[11px] uppercase tracking-wider text-[color:var(--muted-2)] font-medium">
+          <th className="text-left px-3 py-2 border-b border-(--border) text-[11px] uppercase tracking-wider text-(--muted-2) font-medium">
             {children}
           </th>
         ),
         td: ({ children }) => (
-          <td className="px-3 py-2 border-b border-[var(--border)]">
+          <td className="px-3 py-2 border-b border-(--border)">
             {children}
           </td>
         ),
@@ -1154,23 +1154,23 @@ function ContactField({
   const has = hasValue(value);
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)]">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-(--muted-2)">
         {label}
       </dt>
-      <dd className="mt-1.5 text-[14px] leading-[1.4] break-words">
+      <dd className="mt-1.5 text-[14px] leading-[1.4] wrap-break-word">
         {!has ? (
-          <span className="text-[color:var(--muted-2)]">—</span>
+          <span className="text-(--muted-2)">—</span>
         ) : href ? (
           <a
             href={href}
             target={external ? "_blank" : undefined}
             rel={external ? "noopener noreferrer" : undefined}
-            className="text-[color:var(--accent)] hover:underline"
+            className="text-(--accent) hover:underline"
           >
             {displayOverride ?? value}
           </a>
         ) : (
-          <span className="text-[color:var(--foreground)]">{displayOverride ?? value}</span>
+          <span className="text-foreground">{displayOverride ?? value}</span>
         )}
       </dd>
     </div>
@@ -1191,25 +1191,25 @@ function HistoryRow({ email }: { email: EmailRow }) {
   // Only allow expanding when there's an actual stored body to show.
   const hasBody = !!(email.body && email.body.trim());
   return (
-    <div className="border-b border-[var(--border)] last:border-b-0">
+    <div className="border-b border-(--border) last:border-b-0">
       {/* Header — click anywhere to expand/collapse the sent email body. */}
       <button
         type="button"
         onClick={() => hasBody && setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className={`w-full px-[18px] py-3.5 flex items-center justify-between gap-3 text-left transition-colors ${
+        className={`w-full px-4.5 py-3.5 flex items-center justify-between gap-3 text-left transition-colors ${
           hasBody
-            ? "cursor-pointer hover:bg-[var(--surface-2)]/50"
+            ? "cursor-pointer hover:bg-(--surface-2)/50"
             : "cursor-default"
         }`}
       >
         <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-(--muted-2)">
             Stage {email.stage} · {stageLabel}
           </div>
           <div className="text-[13.5px] mt-0.5 truncate">{email.subject}</div>
           {sentAt && (
-            <div className="text-[11px] text-[color:var(--muted-2)] mt-1">
+            <div className="text-[11px] text-(--muted-2) mt-1">
               Sent · {sentAt.toLocaleString()}
               {openedAt && ` · Opened ${openedAt.toLocaleString()}`}
             </div>
@@ -1228,7 +1228,7 @@ function HistoryRow({ email }: { email: EmailRow }) {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`text-[color:var(--muted)] transition-transform duration-200 ${
+              className={`text-(--muted) transition-transform duration-200 ${
                 expanded ? "rotate-180" : ""
               }`}
             >
@@ -1239,18 +1239,17 @@ function HistoryRow({ email }: { email: EmailRow }) {
       </button>
 
       {/* Expanded — the actual email body as it was sent (plain-text record). */}
-      {expanded && hasBody && (
-        <div className="px-[18px] pb-4 pt-1">
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/40 p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--muted-2)] mb-2">
-              Email content
-            </p>
-            <p className="text-[13px] text-[color:var(--foreground)] whitespace-pre-wrap leading-relaxed break-words">
-              {email.body}
-            </p>
-          </div>
-        </div>
-      )}
+     {/* Expanded — display the email with the same HTML formatting as sent. */}
+{expanded && hasBody && (
+  <div className="px-4.5 pb-4 pt-1">
+    <div className="rounded-lg border border-(--border) bg-white overflow-hidden">
+      <div
+        className="px-5 py-4 text-[14px] leading-[1.6] text-[#333]"
+        dangerouslySetInnerHTML={{ __html: email.body }}
+      />
+    </div>
+  </div>
+)}
     </div>
   );
 }

@@ -359,3 +359,14 @@ textarea:focus-visible {
 .rdp-root .rdp-range_start.rdp-range_end {
   background: transparent; /* single-day range — no flanking band */
 }
+
+/* calendar visibility issue */
+input[type="date"] {
+  color: var(--foreground);
+  color-scheme: light;
+}
+
+[data-theme="dark"] input[type="date"] {
+  color: var(--foreground);
+  color-scheme: dark;
+}

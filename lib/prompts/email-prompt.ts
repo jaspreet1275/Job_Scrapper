@@ -684,26 +684,26 @@ Use:
 
 <body style="margin:0; padding:20px; background:#ffffff; font-family:Arial, Helvetica, sans-serif; color:#333333; font-size:14px; line-height:1.6;">
 
-  <p>{{Greeting based on the Contact Person rule above}}</p>
+  <p style="margin:0 0 12px 0; line-height:1.6;">
+  {{Greeting based on the Contact Person rule above}}
+</p>
 
-  <p>
-    I hope you are doing well.
-  </p>
+  <p style="margin:0 0 18px 0; line-height:1.6;">
+  I hope you are doing well.
+</p>
 
-  <p>
-    {{2-3 sentence understanding of the company's actual requirement,
-    generated specifically from the JD.}}
-  </p>
+ <p style="margin:0 0 18px 0; line-height:1.6;">
+  {{2-3 sentence understanding of the company's actual requirement,
+  generated specifically from the JD.}}
+</p>
 
-  <p>
-    {{2-3 sentence brief introduction of ${c.name} and its dedicated
-    developer/resource engagement model.}}
-  </p>
-
-  <p>
-    <strong>Based on your requirements, we can support you with:</strong>
-  </p>
-
+<p style="margin:0 0 18px 0; line-height:1.6;">
+  {{2-3 sentence brief introduction of ${c.name} and its dedicated
+  developer/resource engagement model.}}
+</p>
+  <p style="margin:0 0 10px 0; line-height:1.6;">
+  <strong>Based on your requirements, we can support you with:</strong>
+</p>
   <ul style="padding-left:20px; margin:10px 0;">
 
     <li style="margin-bottom:8px;">
@@ -728,14 +728,14 @@ Use:
 
   </ul>
 
-  <p>
-    {{2-3 sentence practical explanation of how ${c.name} can help
-    the client's team.}}
-  </p>
+  <p style="margin:18px 0 18px 0; line-height:1.6;">
+  {{2-3 sentence practical explanation of how ${c.name} can help
+  the client's team.}}
+</p>
 
-  <p>
-    {{Short, natural CTA inviting a discussion.}}
-  </p>
+<p style="margin:0 0 18px 0; line-height:1.6;">
+  {{Short, natural CTA inviting a discussion.}}
+</p>
 
   <p style="margin-top:22px; margin-bottom:4px;">
     Best regards,
