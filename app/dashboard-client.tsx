@@ -252,7 +252,8 @@ export default function DashboardClient() {
   const [scrapeDate, setScrapeDate] = useState<string>(todayStr());
   // Hidden native <input type="date"> is used purely for the picker UI;
   // this ref lets the visible calendar button trigger showPicker() on it.
-  const scrapeDateInputRef = useRef<HTMLInputElement>(null);
+  //const scrapeDateInputRef = useRef<HTMLInputElement>(null);
+const postedDateInputRef = useRef<HTMLInputElement>(null);
   // The dashboard's per-row email modal was removed when the Smart Send
   // button moved to /jobs/[jobId]. Sending now happens entirely on the
   // detail page; this list view is summary-only.
@@ -279,7 +280,10 @@ export default function DashboardClient() {
   //   return `${yyyy}-${mm}-${dd}`;
   // });
 
-  const [savedFilterScrapedDate, setSavedFilterScrapedDate] = useState("");
+//const [savedFilterScrapedDate, setSavedFilterScrapedDate] = useState("");
+
+// Posted date filter — filters by the job's original posted date.
+const [savedFilterPostedDate, setSavedFilterPostedDate] = useState("");
   
   // All Jobs table pagination
   const [currentJobsPage, setCurrentJobsPage] = useState(1);
@@ -299,7 +303,8 @@ export default function DashboardClient() {
     setSavedFilterPlatform(searchParams.get("platform") || "all");
     setSavedFilterStatus(searchParams.get("status") || "all");
     setSavedFilterEmail(searchParams.get("email") || "all");
-    setSavedFilterScrapedDate(searchParams.get("date") || "");
+    // setSavedFilterScrapedDate(searchParams.get("date") || "");
+    setSavedFilterPostedDate(searchParams.get("date") || "");
 
     const page = Number(searchParams.get("page") || "1");
     setCurrentJobsPage(Number.isFinite(page) && page > 0 ? page : 1);
@@ -326,7 +331,8 @@ export default function DashboardClient() {
         platform: savedFilterPlatform,
         status: savedFilterStatus,
         email: savedFilterEmail,
-        date: savedFilterScrapedDate,
+        // date: savedFilterScrapedDate,
+        date: savedFilterPostedDate,
         page: currentJobsPage,
         ...updates,
       };
@@ -358,7 +364,8 @@ export default function DashboardClient() {
       savedFilterPlatform,
       savedFilterStatus,
       savedFilterEmail,
-      savedFilterScrapedDate,
+      // savedFilterScrapedDate,
+      savedFilterPostedDate,
       currentJobsPage,
       router,
     ]
@@ -1929,7 +1936,7 @@ export default function DashboardClient() {
       return;
     }
     setCurrentJobsPage(1);
-  }, [savedSearch, savedFilterPlatform, savedFilterStatus, savedFilterEmail, savedFilterScrapedDate]);
+  }, [savedSearch, savedFilterPlatform, savedFilterStatus, savedFilterEmail, savedFilterPostedDate]);
 
   // Mobile sidebar init + auto-close-on-nav both moved to the
   // Sidebar component / DashboardContext provider.
@@ -2141,9 +2148,13 @@ export default function DashboardClient() {
         if (savedFilterEmail === "without" && hasEmail) return false;
       }
       // Scraped date pick (job.capturedDate — when WE captured it).
-      if (savedFilterScrapedDate) {
-        if (!matchesPickedDate(job.capturedDate, savedFilterScrapedDate)) return false;
-      }
+      // if (savedFilterScrapedDate) {
+      //   if (!matchesPickedDate(job.capturedDate, savedFilterScrapedDate)) return false;
+      // }
+      // Posted date pick (job.postedAt — when the job was originally posted).
+if (savedFilterPostedDate) {
+  if (!matchesPickedDate(job.postedAt, savedFilterPostedDate)) return false;
+}
       return true;
     }).sort((a, b) => sortKey(b).localeCompare(sortKey(a)));
   })();
@@ -3317,7 +3328,7 @@ export default function DashboardClient() {
                       type="button"
                       onClick={() => {
                         if (gmailLoading) return;
-                        const el = scrapeDateInputRef.current;
+                        const el = postedDateInputRef.current;
                         if (el && typeof el.showPicker === "function") {
                           el.showPicker();
                         } else {
@@ -3345,7 +3356,7 @@ export default function DashboardClient() {
                       </svg>
                     </button>
                     <input
-                      ref={scrapeDateInputRef}
+                      ref={postedDateInputRef}
                       type="date"
                       value={scrapeDate}
                       max={todayStr()}
@@ -3738,7 +3749,7 @@ export default function DashboardClient() {
                   </select>
                   {/* Scraped date picker — filter by when this dashboard
                       captured the row (capturedDate). */}
-                  <label className="surface inline-flex items-center gap-2 px-3 py-2 text-[13px] cursor-pointer focus-within:border-[color:var(--accent)]">
+                  {/* <label className="surface inline-flex items-center gap-2 px-3 py-2 text-[13px] cursor-pointer focus-within:border-[color:var(--accent)]">
                     <span className="text-[color:var(--muted)] select-none">Scraped:</span>
                     <input
                       type="date"
@@ -3753,15 +3764,42 @@ export default function DashboardClient() {
                           page: 1,
                         });
                       }}
-                      className="bg-transparent outline-none text-[13px] text-[color:var(--foreground)] [color-scheme:light] dark:[color-scheme:dark]"
+                      className="bg-transparent outline-none text-[13px] text-[color:var(--foreground)] 
+                      [color-scheme:light] dark:[color-scheme:dark]"
                       title="Filter by scraped date (when this dashboard captured it)"
                     />
-                  </label>
+                  </label> */}
+
+                   {/* Posted date picker — filter by when the job was originally posted. */}
+<label className="surface inline-flex items-center gap-2 px-3 py-2 text-[13px] cursor-pointer focus-within:border-[color:var(--accent)]">
+  <span className="text-[color:var(--muted)] select-none">
+    Posted:
+  </span>
+
+  <input
+  ref={postedDateInputRef}
+  type="date"
+  value={savedFilterPostedDate}
+  onChange={(e) => {
+    const value = e.target.value;
+    restoringJobsFiltersRef.current = true;
+    setSavedFilterPostedDate(value);
+    setCurrentJobsPage(1);
+    updateJobsUrl({
+      date: value,
+      page: 1,
+    });
+  }}
+  className="bg-transparent outline-none text-[13px]"
+  title="Filter by posted date"
+/>
+</label>
+
                   {(savedSearch ||
                     savedFilterPlatform !== "all" ||
                     savedFilterStatus !== "all" ||
                     savedFilterEmail !== "all" ||
-                    savedFilterScrapedDate) && (
+                    savedFilterPostedDate) && (
                     <button
                       onClick={() => {
                         // Clear EVERYTHING — including the email filter and
@@ -3773,7 +3811,8 @@ export default function DashboardClient() {
                         setSavedFilterPlatform("all");
                         setSavedFilterStatus("all");
                         setSavedFilterEmail("all");
-                        setSavedFilterScrapedDate("");
+                        // setSavedFilterScrapedDate("");
+                        setSavedFilterPostedDate("");
                         setCurrentJobsPage(1);
                         router.replace("/jobs", { scroll: false });
                       }}
